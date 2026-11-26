@@ -38,12 +38,12 @@
       {
         "nombre": "WhatsApp",
         "imagen": "btn-whatsapp.png",
-        "enlace": ""
+        "enlace": "https://wa.me/51977368277?text=Hola!%20Quisiera%20inscribirme%20a%20Aurum"
       },
       {
         "nombre": "Instagram",
         "imagen": "btn-instagram.png",
-        "enlace": ""
+        "enlace": "https://www.instagram.com/aurumpreacademy?dmpr=MWp2ZXpsbm9mM2ZqdA=="
       },
       {
         "nombre": "X",
@@ -58,7 +58,7 @@
       {
         "nombre": "Facebook",
         "imagen": "btn-facebook.png",
-        "enlace": ""
+        "enlace": "https://www.facebook.com/share/1FvZFXkSFY/"
       }
     ],
     "boton": "Equipo"
@@ -76,25 +76,25 @@
     "fundadores": [
       {
         "nombre": "Joel",
-        "foto": "sin-foto.png",
-        "telefono": ""
+        "foto": "foto-1795656433351-1.jpg",
+        "telefono": "977368277"
       },
       {
         "nombre": "Yeyo",
         "foto": "sin-foto.png",
-        "telefono": ""
+        "telefono": "956729567"
       },
       {
         "nombre": "Fegnec",
         "foto": "sin-foto.png",
-        "telefono": ""
+        "telefono": "973099185"
       }
     ],
     "mensajeFundador": "¡Hola! Quisiera información sobre Aurum Pre Academy.",
     "uneteTitulo": "Únete al equipo",
     "uneteTexto": "Escríbenos y asegura tu inscripción.",
     "boton": "Enviar solicitud",
-    "telefonoAcademia": "961 759 133",
+    "telefonoAcademia": "977 368 277",
     "mensajeInscripcion": "¡Hola! Quisiera inscribirme a Aurum Pre Academy"
   },
   "pie": {
