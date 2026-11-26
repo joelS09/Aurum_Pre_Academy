@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Editor | Aurum Pre-Academy</title>
+<link rel="icon" href="icono.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:16px/1.5 system-ui,sans-serif;background:#f2f2f0;color:#1d1d20;padding-bottom:7rem}
+header{background:#0b0b0d;color:#ffd60a;padding:1.1rem 1rem;text-align:center;border-bottom:3px solid #ffd60a}
+header h1{font:600 1.5rem Georgia,serif}
+header p{color:#c9c9ce;font-size:.9rem}
+main{max-width:720px;margin:auto;padding:1rem}
+details{background:#fff;border:1px solid #deded9;border-radius:12px;margin-bottom:.9rem}
+summary{cursor:pointer;font-weight:700;padding:1rem}
+.cuerpo{padding:0 1rem 1rem}
+label{display:block;font-weight:600;font-size:.92rem;margin:1rem 0 .3rem}
+input[type=text],input[type=password],input[type=tel],textarea,select{width:100%;font:inherit;padding:.65rem .75rem;border:1px solid #bbbbb5;border-radius:8px;background:#fff}
+textarea{min-height:7rem;resize:vertical}
+.nota{font-size:.85rem;color:#62626a;margin-top:.25rem}
+.imagen{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+.imagen img{width:130px;max-height:100px;object-fit:contain;background:#26241f;border-radius:8px}
+button,.archivo{font:600 .95rem system-ui,sans-serif;border:1px solid #1d1d20;background:#fff;color:#1d1d20;border-radius:8px;padding:.6rem .9rem;cursor:pointer;display:inline-block;margin:0}
+button.principal{background:#ffd60a;border-color:#ffd60a}
+button:disabled{opacity:.55;cursor:wait}
+.archivo input{position:absolute;opacity:0;width:1px;height:1px}
+.archivo:focus-within,button:focus-visible{outline:3px solid #ffd60a;outline-offset:2px}
+.grupo{border-top:2px solid #ecece8;margin-top:1.2rem;padding-top:.2rem}
+.fila{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.casilla{display:flex;gap:.5rem;align-items:center;font-weight:400}
+#barra{position:fixed;left:0;right:0;bottom:0;background:#0b0b0d;color:#fff;padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom));z-index:5}
+#barra div{max-width:720px;margin:auto;display:flex;gap:.6rem;justify-content:center}
+#barra button{flex:1;max-width:240px}
+#estado{text-align:center;font-size:.88rem;margin-bottom:.4rem;overflow-wrap:anywhere}
+#estado.error{color:#ff9d93}
+#estado.bien{color:#8ee6a4}
+#visor{position:fixed;inset:0;background:#0b0b0d;z-index:10;display:flex;flex-direction:column}
+#visor[hidden]{display:none}
+#visor nav{display:flex;gap:.4rem;padding:.6rem;justify-content:center;flex-wrap:wrap}
+#visor iframe{flex:1;border:0;background:#fff;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>Editor de Aurum Pre-Academy</h1>
+  <p>Cambia textos, fotos, enlaces y números. Luego publica.</p>
+</header>
+<main>
+  <details id="conexion" open>
+    <summary>1. Conectar con GitHub (para publicar)</summary>
+    <div class="cuerpo">
+      <label for="usuario">Usuario de GitHub</label><input type="text" id="usuario" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <label for="repo">Nombre del repositorio</label><input type="text" id="repo" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <label for="rama">Rama</label><input type="text" id="rama" value="main" autocapitalize="off" autocomplete="off" spellcheck="false">
+      <label for="token">Token de acceso</label><input type="password" id="token" autocomplete="off">
+      <p class="nota">Créalo en GitHub: Settings → Developer settings → Fine-grained tokens. Elige solo este repositorio y el permiso “Contents: Read and write”. No lo compartas.</p>
+      <label class="casilla"><input type="checkbox" id="recordar"> Recordar en este dispositivo (solo si es tuyo)</label>
+      <div class="fila">
+        <button type="button" id="cargar">Conectar y cargar contenido</button>
+        <button type="button" id="olvidar">Olvidar token</button>
+      </div>
+    </div>
+  </details>
+
+  <div id="formulario"></div>
+
+  <details>
+    <summary>Copia de seguridad (sin token)</summary>
+    <div class="cuerpo">
+      <p class="nota">Descarga tu content.json y súbelo a mano al repositorio, o abre una copia guardada.</p>
+      <div class="fila">
+        <button type="button" id="descargar">Descargar content.json</button>
+        <label class="archivo">Abrir un content.json<input type="file" id="abrir" accept=".json,application/json"></label>
+      </div>
+    </div>
+  </details>
+</main>
+
+<div id="barra">
+  <p id="estado" role="status">Cargando contenido…</p>
+  <div>
+    <button type="button" id="ver">Vista previa</button>
+    <button type="button" id="publicar" class="principal">Publicar cambios</button>
+  </div>
+</div>
+
+<div id="visor" hidden>
+  <nav>
+    <button type="button" data-pag="index.html">Inicio</button>
+    <button type="button" data-pag="historia.html">Historia</button>
+    <button type="button" data-pag="equipo.html">Equipo</button>
+    <button type="button" id="cerrar" class="principal">Cerrar</button>
+  </nav>
+  <iframe id="marco" title="Vista previa del sitio"></iframe>
+</div>
+
+<script>
+(function () {
+'use strict';
+var $ = function (id) { return document.getElementById(id); };
+var datos = null, cambios = false, ocupado = false;
+var subidas = {}; // ruta publicada -> imagen local, para verla antes de que GitHub Pages se actualice
+
+// [tipo, ruta, etiqueta, ayuda]
+var CAMPOS = [
+  ['2. Inicio', [
+    ['imagen','inicio.banner','Imagen del banner'],
+    ['texto','inicio.titulo1','Título del banner (amarillo)'],
+    ['texto','inicio.titulo2','Título del banner (amarillo)'],
+    ['texto','inicio.subtitulo','Subtítulo del banner'],
+    ['largo','inicio.presentacion','Presentación'],
+    ['imagen','inicio.imagen2','Segunda imagen'],
+    ['largo','inicio.sobre','Texto sobre nosotros'],
+    ['imagen','inicio.imagen3','Tercera imagen'],
+    ['texto','inicio.aprenderTitulo','Título de los cursos'],
+    ['lista','inicio.materias','Cursos','Escribe uno por línea.'],
+    ['texto','inicio.preguntasTitulo','Título de preguntas'],
+    ['texto','inicio.preguntasAntes','Texto antes del correo'],
+    ['texto','inicio.correo','Correo electrónico'],
+    ['texto','inicio.preguntasDespues','Texto después del correo'],
+    ['texto','inicio.boton','Texto del botón a Historia']
+  ]],
+  ['3. Historia y redes sociales', [
+    ['texto','historia.titulo','Título'],
+    ['largo','historia.texto','Nuestra historia','Deja una línea en blanco para separar párrafos.'],
+    ['imagen','historia.imagen','Cuarta imagen'],
+    ['texto','historia.unete','Pregunta antes de las redes'],
+    ['redes','historia.redes'],
+    ['texto','historia.boton','Texto del botón a Equipo']
+  ]],
+  ['4. Equipo y WhatsApp', [
+    ['texto','equipo.titulo','Título'],
+    ['texto','equipo.lema','Frase destacada'],
+    ['largo','equipo.texto','Por qué escogernos'],
+    ['imagen','equipo.imagen','Imagen'],
+    ['texto','equipo.conoceTitulo','Título “Conoce al equipo”'],
+    ['largo','equipo.conoce1','Texto del equipo'],
+    ['largo','equipo.conoce2','Frase de cierre'],
+    ['texto','equipo.contactoTitulo','Título de contacto'],
+    ['texto','equipo.contactoAyuda','Indicación sobre las fotos'],
+    ['fundadores','equipo.fundadores'],
+    ['largo','equipo.mensajeFundador','Mensaje de WhatsApp al tocar una foto'],
+    ['texto','equipo.uneteTitulo','Título de inscripción'],
+    ['texto','equipo.uneteTexto','Texto de inscripción'],
+    ['texto','equipo.boton','Texto del botón de inscripción'],
+    ['telefono','equipo.telefonoAcademia','Teléfono de la academia (recibe las inscripciones)','9 dígitos, por ejemplo 987654321. Para otro país, incluye el código.'],
+    ['largo','equipo.mensajeInscripcion','Mensaje de inscripción']
+  ]],
+  ['5. Logo, menú y pie de página', [
+    ['imagen','logo','Logo (barra superior y menú)','Usa un PNG sin fondo, en blanco o amarillo.'],
+    ['texto','marca','Nombre de la academia'],
+    ['texto','menu.titulo','Título del menú'],
+    ['texto','menu.inscribir','Texto del botón de inscripción del menú'],
+    ['texto','pie.linea1','Pie de página, línea 1'],
+    ['texto','pie.linea2','Pie de página, línea 2']
+  ]]
+];
+
+function estado(texto, clase) { $('estado').textContent = texto; $('estado').className = clase || ''; }
+function leer(r) { return r.split('.').reduce(function (o, k) { return o[k]; }, datos); }
+function poner(r, v) {
+  var p = r.split('.'), u = p.pop();
+  p.reduce(function (o, k) { return o[k]; }, datos)[u] = v;
+  marcar();
+}
+function marcar() { cambios = true; estado('Tienes cambios sin publicar.'); }
+function el(tag, props, padre) {
+  var e = document.createElement(tag);
+  Object.assign(e, props || {});
+  if (padre) padre.appendChild(e);
+  return e;
+}
+var n = 0;
+function entrada(caja, etiqueta, valor, alCambiar, tipo, ayuda) {
+  var id = 'c' + (++n);
+  el('label', { htmlFor: id, textContent: etiqueta }, caja);
+  var largo = tipo === 'largo' || tipo === 'lista';
+  var i = el(largo ? 'textarea' : 'input', { id: id }, caja);
+  if (!largo) i.type = tipo === 'telefono' ? 'tel' : 'text';
+  i.value = valor || '';
+  i.addEventListener('input', function () { alCambiar(i.value); });
+  if (ayuda) el('p', { className: 'nota', textContent: ayuda }, caja);
+}
+
+function reducir(archivo, maximo, cuadrada) {
+  return new Promise(function (ok, mal) {
+    var url = URL.createObjectURL(archivo), img = new Image();
+    img.onload = function () {
+      var sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+      if (cuadrada) { var l = Math.min(sw, sh); sx = (sw - l) / 2; sy = (sh - l) / 2; sw = sh = l; }
+      var f = Math.min(1, maximo / Math.max(sw, sh));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(sw * f)); c.height = Math.max(1, Math.round(sh * f));
+      c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      // PNG y WebP conservan la transparencia (botones); las fotos van en JPG
+      var png = /png|webp|gif/i.test(archivo.type);
+      ok(c.toDataURL(png ? 'image/png' : 'image/jpeg', 0.84));
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); mal(new Error('formato')); };
+    img.src = url;
+  });
+}
+
+function campoImagen(caja, etiqueta, valor, alCambiar, opciones) {
+  opciones = opciones || {};
+  el('label', { textContent: etiqueta }, caja);
+  var f = el('div', { className: 'imagen' }, caja);
+  var vista = el('img', { alt: 'Imagen actual: ' + etiqueta, src: subidas[valor] || valor }, f);
+  var b = el('label', { className: 'archivo', textContent: 'Cambiar imagen' }, f);
+  var i = el('input', { type: 'file', accept: 'image/*' }, b);
+  i.setAttribute('aria-label', 'Cambiar ' + etiqueta);
+  i.addEventListener('change', function () {
+    if (!i.files[0]) return;
+    reducir(i.files[0], opciones.maximo || 1600, opciones.cuadrada).then(function (d) {
+      vista.src = d; alCambiar(d);
+    }).catch(function () { estado('No se pudo abrir esa imagen. Prueba con un JPG o PNG.', 'error'); });
+    i.value = '';
+  });
+  if (opciones.quitar) {
+    var q = el('button', { type: 'button', textContent: 'Quitar foto' }, f);
+    q.addEventListener('click', function () { vista.src = opciones.quitar; alCambiar(opciones.quitar); });
+  }
+}
+
+function dibujar() {
+  var form = $('formulario');
+  var abiertas = Array.prototype.map.call(form.children, function (d) { return d.open; });
+  form.textContent = '';
+  CAMPOS.forEach(function (sec, s) {
+    var d = el('details', { open: !!abiertas[s] }, form);
+    el('summary', { textContent: sec[0] }, d);
+    var caja = el('div', { className: 'cuerpo' }, d);
+    sec[1].forEach(function (c) {
+      var tipo = c[0], ruta = c[1], etiqueta = c[2], ayuda = c[3];
+      if (tipo === 'imagen') {
+        campoImagen(caja, etiqueta, leer(ruta), function (v) { poner(ruta, v); });
+        if (ayuda) el('p', { className: 'nota', textContent: ayuda }, caja);
+      } else if (tipo === 'lista') {
+        entrada(caja, etiqueta, leer(ruta).join('\n'), function (v) {
+          poner(ruta, v.split('\n').map(function (x) { return x.trim(); }).filter(Boolean));
+        }, tipo, ayuda);
+      } else if (tipo === 'redes') {
+        leer(ruta).forEach(function (r) {
+          var g = el('div', { className: 'grupo' }, caja);
+          entrada(g, 'Enlace de ' + r.nombre, r.enlace, function (v) { r.enlace = v.trim(); marcar(); }, 'texto',
+            /whatsapp/i.test(r.nombre) ? 'Pega el enlace de tu grupo o canal. Si lo dejas vacío, abre el WhatsApp de la academia.' : 'Pega la dirección completa de tu página.');
+          campoImagen(g, 'Botón de ' + r.nombre, r.imagen, function (v) { r.imagen = v; marcar(); }, { maximo: 1100 });
+        });
+      } else if (tipo === 'fundadores') {
+        leer(ruta).forEach(function (p, k) {
+          var g = el('div', { className: 'grupo' }, caja);
+          entrada(g, 'Nombre del fundador ' + (k + 1), p.nombre, function (v) { p.nombre = v; marcar(); });
+          entrada(g, 'WhatsApp del fundador ' + (k + 1), p.telefono, function (v) { p.telefono = v.trim(); marcar(); }, 'telefono', '9 dígitos, o con código de país.');
+          campoImagen(g, 'Foto del fundador ' + (k + 1), p.foto, function (v) { p.foto = v; marcar(); },
+            { maximo: 600, cuadrada: true, quitar: 'sin-foto.png' });
+        });
+      } else {
+        entrada(caja, etiqueta, leer(ruta), function (v) { poner(ruta, v); }, tipo, ayuda);
+      }
+    });
+  });
+}
+
+function usar(j) {
+  if (!j || !j.inicio || !j.historia || !j.equipo || !j.pie ||
+      !Array.isArray(j.inicio.materias) || !Array.isArray(j.historia.redes) || !Array.isArray(j.equipo.fundadores)) {
+    throw new Error('Ese archivo no es un content.json de esta página.');
+  }
+  // un content.json del diseño anterior se completa con los campos nuevos
+  j.logo = j.logo || 'logo.png';
+  j.menu = j.menu || { titulo: 'Menú', inscribir: 'Inscríbete' };
+  datos = j; cambios = false; dibujar();
+}
+
+/* ---------- GitHub ---------- */
+function ajustes() {
+  var a = { u: $('usuario').value.trim(), r: $('repo').value.trim(), b: $('rama').value.trim() || 'main', t: $('token').value.trim() };
+  if (!a.u || !a.r || !a.t) {
+    $('conexion').open = true; $('conexion').scrollIntoView();
+    throw new Error('Completa usuario, repositorio y token en el paso 1.');
+  }
+  try {
+    localStorage.setItem('aurum-repo', JSON.stringify({ u: a.u, r: a.r, b: a.b }));
+    if ($('recordar').checked) localStorage.setItem('aurum-token', a.t); else localStorage.removeItem('aurum-token');
+  } catch (e) {}
+  return a;
+}
+function api(a, ruta, opciones) {
+  opciones = opciones || {};
+  return fetch('https://api.github.com/repos/' + encodeURIComponent(a.u) + '/' + encodeURIComponent(a.r) + ruta, {
+    method: opciones.metodo || 'GET', cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + a.t, Accept: opciones.acepta || 'application/vnd.github+json' },
+    body: opciones.cuerpo ? JSON.stringify(opciones.cuerpo) : undefined
+  }).catch(function () { throw new Error('Sin conexión con GitHub. Revisa tu internet.'); })
+  .then(function (res) {
+    if (!res.ok) {
+      var m = { 401: 'El token no es válido o ya venció.', 403: 'El token no tiene permiso “Contents: Read and write”.',
+        404: 'No se encontró el repositorio, la rama o content.json. Revisa los datos y el permiso del token.',
+        409: 'El repositorio está vacío o cambió. Sube primero los archivos e inténtalo otra vez.',
+        422: 'GitHub rechazó el cambio porque el repositorio se modificó. Vuelve a publicar.' };
+      throw new Error(m[res.status] || 'GitHub respondió con el error ' + res.status + '.');
+    }
+    return res.json();
+  });
+}
+function bloquear(si) { ocupado = si; $('publicar').disabled = $('cargar').disabled = si; $('formulario').inert = si; }
+
+function cargarGitHub() {
+  var a;
+  try { a = ajustes(); } catch (e) { return estado(e.message, 'error'); }
+  if (cambios && !confirm('Se reemplazarán tus cambios sin publicar. ¿Continuar?')) return;
+  bloquear(true); estado('Cargando desde GitHub…');
+  api(a, '/contents/content.json?ref=' + encodeURIComponent(a.b), { acepta: 'application/vnd.github.raw+json' })
+    .then(function (j) { usar(j); $('conexion').open = false; estado('Conectado. Contenido al día.', 'bien'); })
+    .catch(function (e) { estado(e.message, 'error'); })
+    .then(function () { bloquear(false); });
+}
+
+async function publicar() {
+  if (ocupado) return;
+  if (!datos) return estado('Primero carga el contenido.', 'error');
+  var a;
+  try { a = ajustes(); } catch (e) { return estado(e.message, 'error'); }
+  bloquear(true); estado('Publicando…');
+  try {
+    var copia = JSON.parse(JSON.stringify(datos)), archivos = [], nuevas = {}, sello = Date.now(), k = 0;
+    var pendientes = [];
+    (function recorrer(o) {
+      Object.keys(o).forEach(function (c) {
+        if (o[c] && typeof o[c] === 'object') recorrer(o[c]);
+        else if (typeof o[c] === 'string' && o[c].indexOf('data:image/') === 0) pendientes.push([o, c]);
+      });
+    })(copia);
+    var base = await api(a, '/git/ref/heads/' + a.b.split('/').map(encodeURIComponent).join('/'));
+    var commit = await api(a, '/git/commits/' + base.object.sha);
+    for (var p of pendientes) {
+      var dato = p[0][p[1]];
+      var ruta = 'foto-' + sello + '-' + (++k) + (dato.indexOf('data:image/png') === 0 ? '.png' : '.jpg');
+      estado('Subiendo imagen ' + k + ' de ' + pendientes.length + '…');
+      var blob = await api(a, '/git/blobs', { metodo: 'POST', cuerpo: { content: dato.split(',')[1], encoding: 'base64' } });
+      archivos.push({ path: ruta, mode: '100644', type: 'blob', sha: blob.sha });
+      nuevas[ruta] = dato; p[0][p[1]] = ruta;
+    }
+    archivos.push({ path: 'content.json', mode: '100644', type: 'blob', content: JSON.stringify(copia, null, 2) + '\n' });
+    var arbol = await api(a, '/git/trees', { metodo: 'POST', cuerpo: { base_tree: commit.tree.sha, tree: archivos } });
+    var nuevo = await api(a, '/git/commits', { metodo: 'POST', cuerpo: { message: 'Actualizar contenido desde el editor', tree: arbol.sha, parents: [base.object.sha] } });
+    await api(a, '/git/refs/heads/' + a.b.split('/').map(encodeURIComponent).join('/'), { metodo: 'PATCH', cuerpo: { sha: nuevo.sha } });
+    Object.assign(subidas, nuevas);
+    usar(copia);
+    estado('Publicado. Tu web se actualizará en 1 o 2 minutos.', 'bien');
+  } catch (e) {
+    estado('No se publicó. ' + e.message, 'error');
+  }
+  bloquear(false);
+}
+
+/* ---------- vista previa ---------- */
+function contenidoVista() {
+  return JSON.parse(JSON.stringify(datos), function (c, v) { return typeof v === 'string' && subidas[v] ? subidas[v] : v; });
+}
+window.addEventListener('message', function (ev) {
+  if (ev.source === $('marco').contentWindow && ev.data && ev.data.tipo === 'aurum-listo' && datos) {
+    ev.source.postMessage({ tipo: 'aurum-vista', contenido: contenidoVista() }, '*');
+  }
+});
+$('ver').addEventListener('click', function () {
+  if (!datos) return estado('Primero carga el contenido.', 'error');
+  $('visor').hidden = false; $('marco').src = 'index.html?vista';
+});
+$('cerrar').addEventListener('click', function () { $('visor').hidden = true; $('marco').src = 'about:blank'; });
+Array.prototype.forEach.call(document.querySelectorAll('[data-pag]'), function (b) {
+  b.addEventListener('click', function () { $('marco').src = b.getAttribute('data-pag') + '?vista'; });
+});
+
+/* ---------- inicio ---------- */
+$('cargar').addEventListener('click', cargarGitHub);
+$('publicar').addEventListener('click', publicar);
+$('olvidar').addEventListener('click', function () {
+  try { localStorage.removeItem('aurum-token'); } catch (e) {}
+  $('token').value = ''; $('recordar').checked = false; estado('Token borrado de este dispositivo.');
+});
+$('descargar').addEventListener('click', function () {
+  if (!datos) return estado('Primero carga el contenido.', 'error');
+  var u = URL.createObjectURL(new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }));
+  el('a', { href: u, download: 'content.json' }).click();
+  setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+  estado('Descargado. Súbelo a tu repositorio para publicar.', 'bien');
+});
+$('abrir').addEventListener('change', function () {
+  var f = this.files[0]; this.value = '';
+  if (!f) return;
+  f.text().then(function (t) { usar(JSON.parse(t)); marcar(); })
+    .catch(function () { estado('No se pudo abrir: elige un content.json válido de esta página.', 'error'); });
+});
+window.addEventListener('beforeunload', function (e) { if (cambios) { e.preventDefault(); e.returnValue = ''; } });
+
+var guardado = {};
+try { guardado = JSON.parse(localStorage.getItem('aurum-repo')) || {}; } catch (e) {}
+var m = location.hostname.match(/^([^.]+)\.github\.io$/i);
+$('usuario').value = (m && m[1]) || guardado.u || '';
+$('repo').value = (m && (location.pathname.split('/').filter(function (x) { return x && !/\.html$/.test(x); })[0] || location.hostname)) || guardado.r || '';
+$('rama').value = guardado.b || 'main';
+try { var t = localStorage.getItem('aurum-token'); if (t) { $('token').value = t; $('recordar').checked = true; } } catch (e) {}
+
+if ($('usuario').value && $('repo').value && $('token').value) {
+  cargarGitHub();
+} else {
+  fetch('content.json?v=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) { usar(j); estado('Contenido cargado. Abre una sección para editar.'); })
+    .catch(function () { estado('Abre tu content.json en “Copia de seguridad” o conéctate a GitHub.', 'error'); });
+}
+})();
+</script>
+</body>
+</html>

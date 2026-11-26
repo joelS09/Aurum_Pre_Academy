@@ -1,0 +1,50 @@
+AURUM PRE-ACADEMY: CÓMO PUBLICAR EN GITHUB
+
+1. En github.com crea un repositorio público (por ejemplo: aurum).
+2. Entra en "Add file" > "Upload files", selecciona TODOS los archivos
+   (no la carpeta ni el .zip) y pulsa "Commit changes".
+3. Ve a Settings > Pages. En "Branch" elige main y / (root). Guarda.
+4. Espera 1 o 2 minutos. Tu web estará en:
+   https://TU-USUARIO.github.io/aurum/
+   El editor estará en:
+   https://TU-USUARIO.github.io/aurum/admin.html
+
+IMAGEN AL COMPARTIR EL ENLACE E ÍCONO
+- Ícono del navegador: favicon.ico, favicon-32.png, favicon-192.png e icono.png.
+- Imagen al compartir (WhatsApp, Facebook, etc.): og-imagen.jpg.
+- IMPORTANTE: en index.html, historia.html y equipo.html busca
+  https://TU-USUARIO.github.io/aurum/ (en las líneas og:image y twitter:image)
+  y cambia TU-USUARIO y aurum por tu usuario y repositorio reales.
+  Las redes no muestran la imagen si la dirección no es completa y correcta.
+- Si compartes y sigue saliendo la imagen anterior, las redes la guardan un
+  tiempo; prueba en developers.facebook.com/tools/debug para actualizarla.
+
+CÓMO EDITAR
+
+1. En GitHub: Settings > Developer settings > Personal access tokens >
+   Fine-grained tokens > Generate new token.
+   - Repository access: Only select repositories > aurum
+   - Permissions > Repository permissions > Contents: Read and write
+2. Abre admin.html, pega el token y pulsa "Conectar y cargar contenido".
+3. Cambia lo que quieras, revisa con "Vista previa" y pulsa "Publicar cambios".
+
+SI YA HABÍAS SUBIDO LA VERSIÓN ANTERIOR
+- Sube y reemplaza todos los archivos.
+- Si ya habías editado datos desde el editor, NO subas el nuevo
+  content.json: conserva el tuyo y solo revisa en el editor tus teléfonos y enlaces.
+
+TIPOGRAFÍA
+Los títulos usan una letra ancha parecida a Gotrek (incluida: variante
+ensanchada de Montserrat). Si tienes la licencia de Gotrek, sube su archivo
+con el nombre exacto Gotrek.otf o Gotrek.ttf y se usará automáticamente.
+
+CRÉDITOS (licencias libres)
+Montserrat y DM Sans: SIL Open Font License.
+Iconos: Font Awesome Free, CC BY 4.0.
+
+PENDIENTE DE LLENAR EN EL EDITOR
+- Teléfono de la academia
+- Teléfonos y fotos de Joel, Yeyo y Fegnec
+- Enlaces de WhatsApp, Instagram, X, YouTube y Facebook
+
+No compartas tu token ni lo escribas dentro de ningún archivo.

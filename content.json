@@ -1,0 +1,104 @@
+{
+  "marca": "Aurum Pre-Academy",
+  "logo": "logo.png",
+  "menu": {
+    "titulo": "Menú",
+    "inscribir": "Inscríbete"
+  },
+  "inicio": {
+    "banner": "banner.jpg",
+    "titulo1": "AURUM",
+    "titulo2": "PRE ACADEMY",
+    "subtitulo": "¡Convierte tu esfuerzo en éxito!",
+    "presentacion": "Somos la primera academia fundada por estudiantes para ustedes, estudiantes, con el objetivo de que sigas aprendiendo y logres todas tus metas.",
+    "imagen2": "estudiando.jpg",
+    "sobre": "Somos jóvenes con un solo objetivo: el de educar a jóvenes como nosotros. Tenemos un gran talento en nuestro colegio y las mejores notas, y estamos orgullosos, pero no es un logro si no lo compartimos con los demás. Por eso nació Aurum: una mini academia en la cual aprenderás más de lo que imaginas y podrás así cumplir ese sueño que todos tenemos, el de ingresar a una universidad.",
+    "imagen3": "tablet.jpg",
+    "aprenderTitulo": "Aprenderás:",
+    "materias": [
+      "Matemática general",
+      "Literatura",
+      "Física",
+      "Química",
+      "Gramática",
+      "Historia y más"
+    ],
+    "preguntasTitulo": "¿Preguntas?",
+    "preguntasAntes": "Envía un correo electrónico a",
+    "correo": "Aurumpreacademy@gmail.com",
+    "preguntasDespues": "para obtener más información sobre el proyecto.",
+    "boton": "Historia"
+  },
+  "historia": {
+    "titulo": "Historia",
+    "texto": "Un 9 de septiembre del año 2026, en el aula de 5to E de la I.E. T.T.E. Miguel Cortés del Castillo, durante una conversación entre un compañero de salón, nació la idea de aplicar todo lo aprendido durante los 5 años de estudio en secundaria, ya que nos habíamos percatado de que a la mayoría de estudiantes no les quedaba claro lo que se les enseñaba. Muchos no comprendían ciertos temas, y es ahí donde encontramos una solución al problema. Así nació \"Aurum\", una mini academia fundada por un equipo de tres estudiantes de quinto de secundaria, dirigida a aquellos que desean aprender más de lo que ya hacen. Nosotros sabemos y hemos vivido el miedo de no ingresar a una universidad para continuar estudiando; por eso estamos dispuestos a apoyar y reforzar los conocimientos de los estudiantes que en un futuro postularán.",
+    "imagen": "laptop.jpg",
+    "unete": "¿Te gustaría formar parte de nosotros?",
+    "redes": [
+      {
+        "nombre": "WhatsApp",
+        "imagen": "btn-whatsapp.png",
+        "enlace": ""
+      },
+      {
+        "nombre": "Instagram",
+        "imagen": "btn-instagram.png",
+        "enlace": ""
+      },
+      {
+        "nombre": "X",
+        "imagen": "btn-x.png",
+        "enlace": ""
+      },
+      {
+        "nombre": "YouTube",
+        "imagen": "btn-youtube.png",
+        "enlace": ""
+      },
+      {
+        "nombre": "Facebook",
+        "imagen": "btn-facebook.png",
+        "enlace": ""
+      }
+    ],
+    "boton": "Equipo"
+  },
+  "equipo": {
+    "titulo": "¿Por qué escogernos?",
+    "lema": "¡Somos jóvenes, pero capaces!",
+    "texto": "Somos un equipo de tres estudiantes que tenemos una meta clara: ayudar a quienes tengan dificultades en los estudios, para que así puedan entender mejor cada materia.",
+    "imagen": "discurso.jpg",
+    "conoceTitulo": "Conoce al equipo",
+    "conoce1": "Somos un equipo de jóvenes, así como tú, que buscamos ayudar a aquellos que quieran reforzar y echar a volar sus conocimientos, para que aprendan un poco más día a día y para que logren todo aquello que quieren.",
+    "conoce2": "Porque sabemos que, al igual que nosotros, tú también tienes metas que buscas cumplir, y juntos lo lograremos.",
+    "contactoTitulo": "Contáctanos",
+    "contactoAyuda": "Toca una foto para escribirle por WhatsApp.",
+    "fundadores": [
+      {
+        "nombre": "Joel",
+        "foto": "sin-foto.png",
+        "telefono": ""
+      },
+      {
+        "nombre": "Yeyo",
+        "foto": "sin-foto.png",
+        "telefono": ""
+      },
+      {
+        "nombre": "Fegnec",
+        "foto": "sin-foto.png",
+        "telefono": ""
+      }
+    ],
+    "mensajeFundador": "¡Hola! Quisiera información sobre Aurum Pre Academy.",
+    "uneteTitulo": "Únete al equipo",
+    "uneteTexto": "Escríbenos y asegura tu inscripción.",
+    "boton": "Enviar solicitud",
+    "telefonoAcademia": "961 759 133",
+    "mensajeInscripcion": "¡Hola! Quisiera inscribirme a Aurum Pre Academy"
+  },
+  "pie": {
+    "linea1": "Aurum Pre Academy_Piura-Perú",
+    "linea2": "©2026-2027 todos los derechos reservados"
+  }
+}
